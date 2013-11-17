@@ -1,0 +1,20 @@
+<% include ../head %>
+<table>
+	<% for(var i=0;i<list.length;i++){ %>
+	<tr>
+		<td>
+			<%= list[i].ip %></td>
+		<td>
+			<%= list[i].originalUrl %></td>
+		<td>
+			<%= list[i].screenW %></td>
+		<td>
+			<%= list[i].screenH %></td>
+		<td>
+			<%= list[i].userAgent %></td>
+		<td>
+			<%= list[i].date %></td>
+
+	</tr>
+	<% } %></table>
+<% include ../foot %>

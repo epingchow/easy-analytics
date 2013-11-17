@@ -1,0 +1,76 @@
+(function() {
+	var _key = "<%= key %>";
+	var _url = "<%= url %>";
+	var utils = {
+		createXHR: function() {
+			if (window.XMLHttpRequest) {
+				var xhr = new XMLHttpRequest();
+				return xhr;
+			} else if (window.ActiveXObject) {
+				var xhr = new ActiveXObject("Microsoft.XMLHTTP");
+				return xhr;
+			}
+		},
+		ajax: function(method, url, data, callback) {
+			var xhr = this.createXHR();
+			xhr.open(method, url);
+			if (method == "GET") {
+				xhr.send(null);
+			} else if (method == "POST") {
+				xhr.setRequestHeader("Content-Type", "application/json");
+				xhr.send(data);
+			}
+			if (callback)
+				xhr.onreadystatechange = function() {
+					if (xhr.readyState == 4 && xhr.status == 200) {
+						var p = {
+							text: xhr.responseText,
+							xml: xhr.responseXML
+						}
+						callback(p);
+					}
+				}
+		},
+		c_post:function(data) {
+			// Add the iframe with a unique name
+			var iframe = document.createElement("iframe");
+			var uniqueString = Math.random();
+			document.body.appendChild(iframe);
+			iframe.style.display = "none";
+			iframe.contentWindow.name = uniqueString;
+
+			// construct a form with hidden inputs, targeting the iframe
+			var form = document.createElement("form");
+			form.target = uniqueString;
+			form.action = _url + "/data/" + _key + "/base";
+			form.method = "POST";
+			for(var key in data){
+				var input = document.createElement("input");
+				input.type = "hidden";
+				input.name = key;
+				input.value = data[key];
+				form.appendChild(input);
+			}
+			document.body.appendChild(form);
+			form.submit();
+		}
+	}
+
+	var onload = function() {
+		try {
+			var d = {
+				screenW: window.screen.width,
+				screenH: window.screen.height
+			};
+			//utils.ajax("POST", _url + "/data/" + _key + "/base", d);
+			utils.c_post(d);
+		} catch (err) {
+			//console.log(err);
+		}
+	}
+	if (window.addEventListener) {
+		window.addEventListener("load", onload, false);
+	} else if (window.attachEvent) {
+		window.attachEvent("onload", onload);
+	}
+})();
