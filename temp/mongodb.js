@@ -25,5 +25,5 @@ app.get('/test', function(req,res){
 		}else{
 			throw err;
 		}
-	})
+	});
 });

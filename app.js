@@ -76,39 +76,48 @@ app.get('/analytics.js',function(req,res){
 });
 
 app.get('/data/done',function(req,res){
+  res.set("Content-type","application/javascript");
   res.send(200,"");
 });
 
+
 app.get('/view/:key/base',function(req,res){
-  db.Base.find({},function(err,list){
+  var moment = require("moment");
+  db.getModel("base",req.params.key).find({},function(err,list){
     res.render("data/base",{
       title:"base",
+      key:req.params.key,
       list:list
     });
   })
 });
 
 app.post('/data/:key/base',function(req,res){
+  /*
   console.log('screenW ',req.body.screenW);
   console.log('screenH ',req.body.screenH);
   console.log('ip ',req.ip);
   console.log('host ',req.host);
   console.log('fresh ',req.fresh);
   console.log('stale ',req.stale);
-  console.log('originalUrl ',req.originalUrl);
+  console.log('path ',req.body.path);
   console.log('Date ',new Date());
   console.log('User-Agent ',req.get("User-Agent"));
-  var data = new db.Base({
+  */
+  var Base = db.getModel("base",req.params.key);
+  new Base({
      screenW:req.body.screenW,
+     host:req.host,
      screenH:req.body.screenH,
      ip:req.ip,
-     originalUrl:req.originalUrl,
+     path:req.body.path,
      date:new Date(),
      userAgent:req.get("User-Agent")
-  })
-  data.save(function(err){
+  }).save(function(err){
     if(!err){
-      res.redirect(200,'/data/done');
+      res.set("Content-type","application/javascript");
+      res.send(200,"");
+      //res.redirect(200,'/data/done');
     }else{
       throw err;
     }

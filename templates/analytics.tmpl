@@ -31,12 +31,13 @@
 					}
 				}
 		},
-		c_post:function(data) {
+		c_post: function(data) {
+			var i=0;
 			// Add the iframe with a unique name
 			var iframe = document.createElement("iframe");
 			var uniqueString = Math.random();
-			document.body.appendChild(iframe);
 			iframe.style.display = "none";
+			document.body.appendChild(iframe);
 			iframe.contentWindow.name = uniqueString;
 
 			// construct a form with hidden inputs, targeting the iframe
@@ -44,7 +45,7 @@
 			form.target = uniqueString;
 			form.action = _url + "/data/" + _key + "/base";
 			form.method = "POST";
-			for(var key in data){
+			for (var key in data) {
 				var input = document.createElement("input");
 				input.type = "hidden";
 				input.name = key;
@@ -53,21 +54,35 @@
 			}
 			document.body.appendChild(form);
 			form.submit();
+		},
+		jsonp: function(data) {
+			var script = document.createElement("script");
+			script.type = "text/javascript";
+			var param = "";
+			for (var key in data) {
+				param += key + "=" + escape(data[key]) + "&";
+			}
+			param = param.substring(0, param.length - 1);
+			script.src = _url + "/data/" + _key + "/base?"+param;
+			console.log(script.src);
+			document.body.appendChild(script); 
 		}
-	}
+	};
 
 	var onload = function() {
 		try {
 			var d = {
 				screenW: window.screen.width,
-				screenH: window.screen.height
+				screenH: window.screen.height,
+				path: location.pathname
 			};
+			//utils.jsonp(d)
 			//utils.ajax("POST", _url + "/data/" + _key + "/base", d);
 			utils.c_post(d);
 		} catch (err) {
 			//console.log(err);
 		}
-	}
+	};
 	if (window.addEventListener) {
 		window.addEventListener("load", onload, false);
 	} else if (window.attachEvent) {

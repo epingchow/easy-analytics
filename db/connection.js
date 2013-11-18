@@ -15,14 +15,19 @@ mongoose.connect("mongodb://localhost/easy-analytics", function(err) {
 var Schema = mongoose.Schema,
 	ObjectId = Schema.ObjectId;
 
-var Base = new Schema({
-	screenW: String,
-	screenH: String,
-	ip: String,
-	originalUrl: String,
-	date: String,
-	userAgent: String
-});
+var models={
+	base: new Schema({
+		screenW: String,
+		screenH: String,
+		host: String,
+		ip: String,
+		path: String,
+		date: Date,
+		userAgent: String
+	})
+}
 
 
-db.Base = mongoose.model("Base",Base);
+db.getModel = function(schema,key){
+	return mongoose.model(schema+"_"+key,models[schema]);
+}

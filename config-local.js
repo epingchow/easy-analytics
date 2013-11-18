@@ -15,7 +15,7 @@ module.exports = {
   },
   sessionSecret: 'easy-analycity',
   // In production you'd most likely drop the dev. and the port number for both of these
-  url: 'http://127.0.0.1:3000',
+  url: 'http://192.168.1.11:3000',
   // Used to check for the same host and redirect (canonicalize) if needed
-  host: '127.0.0.1:3000'
+  host: '192.168.1.11:3000'
 };
