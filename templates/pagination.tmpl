@@ -1,0 +1,40 @@
+<ul class="pagination pull-left">
+	<li class="disabled" >
+		<a href="javascript:void(0);">每页</a>
+	</li>
+	<li class="<%= (pageSize==15)?"active":"" %>" >
+		<a data-size="15" href="javascript:void(0);">15</a>
+	</li>
+	<li class="<%= (pageSize==25)?"active":"" %>" >
+		<a data-size="25" href="javascript:void(0);">25</a>
+	</li>
+	<li class="<%= (pageSize==50)?"active":"" %>" >
+		<a data-size="50" href="javascript:void(0);">50</a>
+	</li>
+	<li class="disabled" >
+		<a href="javascript:void(0);">条</a>
+	</li>
+</ul>
+<ul class="pagination">
+	<li class="disabled" >
+		<a href="javascript:void(0);">共 <%= pageCount %> 页</a>
+	</li>
+	<li class="<%= (pageNo==1)?"disabled":"" %>" >
+	   <a <%= (pageNo>1)?'data-no="'+ 1 +'"':"" %> href="javascript:void(0);">&lt;&lt;</a>
+	</li>
+	<li class="<%= (pageNo==1)?"disabled":"" %>" >
+		<a <%= (pageNo>1)?'data-no="'+ (pageNo*1-1) +'"':"" %> href="javascript:void(0);">&lt;</a>
+	</li>
+	<% for(var i=Math.max(pageNo-5,1);i<=Math.min(Math.max(pageNo-5,1)+9,pageCount);i++){  %>
+	<li class="<%= (pageNo==i)?"active":"" %>">
+		<a data-no="<%= i %>" href="javascript:void(0);"><%= i %></a>
+	</li>
+	<% }  %>
+	<li class="<%= (pageNo==pageCount)?"disabled":"" %>" >
+		<a href="javascript:void(0);" <%= (pageNo<pageCount)?'data-no="'+(pageNo*1+1)+'"':"" %> >></a>
+	</li>
+	<li class="<%= (pageNo==pageCount)?"disabled":"" %>" >
+		<a href="javascript:void(0);" <%= (pageNo<pageCount)?'data-no="'+ pageCount +'"':"" %>>>></a>
+	</li>
+</ul>
+</div>

@@ -10,13 +10,13 @@ var http = require('http');
 var path = require('path');
 var client = require('./utils/client');
 
-var fs=require("fs");
+var fs = require("fs");
 var db = require("./db/connection");
 var app = express();
 
 
 var _ = require('underscore');
-var options = { 
+var options = {
   // Should be unique to your site. Used to hash session identifiers
   // so they can't be easily hijacked
   db: {
@@ -34,7 +34,7 @@ var options = {
   host: '127.0.0.1:3000'
 };
 
-var jstmpl={};
+var jstmpl = {};
 jstmpl.analytics = _.template(fs.readFileSync(__dirname + '/templates/analytics.tmpl', 'utf8'));
 
 _.extend(options, require('./config-local.js'));
@@ -63,36 +63,53 @@ app.get('/users', user.list);
 app.get('/demo', demo.test);
 
 
-app.get('/analytics.js',function(req,res){
-  var data={
+app.get('/analytics.js', function(req, res) {
+  var data = {
     key: req.query.key,
     url: options.url
   }
-  if(!data.key){
-    res.send(400,"key is needed.");
-  }else{
-    client.sendJS(req,res,jstmpl.analytics(data));
+  if (!data.key) {
+    res.send(400, "key is needed.");
+  } else {
+    client.sendJS(req, res, jstmpl.analytics(data));
   }
 });
 
-app.get('/data/done',function(req,res){
-  res.set("Content-type","application/javascript");
-  res.send(200,"");
+app.get('/data/done', function(req, res) {
+  //res.set("Content-type","application/javascript");
+  res.send(200, "");
 });
 
 
-app.get('/view/:key/base',function(req,res){
+app.get('/view/:key/base', function(req, res) {
   var moment = require("moment");
-  db.getModel("base",req.params.key).find({},function(err,list){
-    res.render("data/base",{
-      title:"base",
-      key:req.params.key,
-      list:list
-    });
-  })
+  var count = db.getModel("base", req.params.key).count({}, function(err, count) {
+    var Page = require("./utils/ui").Page;
+    var page = new Page(req.query.no,req.query.size,count);
+    // db.getModel("base",req.params.key).find({},function(err,list){
+    //   res.render("data/base",{
+    //     title:"base",
+    //     key:req.params.key,
+    //     list:list,
+    //     page:page,
+    //     count:count
+    //   });
+    // });
+    //var pagination=require("./utils/ui").pagination;
+    var query = db.getModel("base", req.params.key).find({}).sort("-date").skip(page.skip()).limit(page.pageSize);
+    query.exec(function(err, list) {
+      res.render("data/base", {
+        title: "base",
+        key: req.params.key,
+        list: list,
+        page:page,
+        count: count
+      });
+    })
+  });
 });
 
-app.post('/data/:key/base',function(req,res){
+app.post('/data/:key/base', function(req, res) {
   /*
   console.log('screenW ',req.body.screenW);
   console.log('screenH ',req.body.screenH);
@@ -104,26 +121,26 @@ app.post('/data/:key/base',function(req,res){
   console.log('Date ',new Date());
   console.log('User-Agent ',req.get("User-Agent"));
   */
-  var Base = db.getModel("base",req.params.key);
+  var Base = db.getModel("base", req.params.key);
   new Base({
-     screenW:req.body.screenW,
-     host:req.host,
-     screenH:req.body.screenH,
-     ip:req.ip,
-     path:req.body.path,
-     date:new Date(),
-     userAgent:req.get("User-Agent")
-  }).save(function(err){
-    if(!err){
-      res.set("Content-type","application/javascript");
-      res.send(200,"");
+    screenW: req.body.screenW,
+    host: req.host,
+    screenH: req.body.screenH,
+    ip: req.ip,
+    path: req.body.path,
+    date: new Date(),
+    userAgent: req.get("User-Agent")
+  }).save(function(err) {
+    if (!err) {
+      res.set("Content-type", "application/javascript");
+      res.send(200, "");
       //res.redirect(200,'/data/done');
-    }else{
+    } else {
       throw err;
     }
   });
 });
 
 http.createServer(app).listen(app.get('port'), function() {
-	console.log('Express server listening on port ' + app.get('port'));
+  console.log('Express server listening on port ' + app.get('port'));
 });
