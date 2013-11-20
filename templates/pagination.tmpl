@@ -19,10 +19,10 @@
 	<li class="disabled" >
 		<a href="javascript:void(0);">共 <%= pageCount %> 页</a>
 	</li>
-	<li class="<%= (pageNo==1)?"disabled":"" %>" >
+	<li class="<%= (pageNo==1 || pageCount==0)?"disabled":"" %>" >
 	   <a <%= (pageNo>1)?'data-no="'+ 1 +'"':"" %> href="javascript:void(0);">&lt;&lt;</a>
 	</li>
-	<li class="<%= (pageNo==1)?"disabled":"" %>" >
+	<li class="<%= (pageNo==1  || pageCount==0)?"disabled":"" %>" >
 		<a <%= (pageNo>1)?'data-no="'+ (pageNo*1-1) +'"':"" %> href="javascript:void(0);">&lt;</a>
 	</li>
 	<% for(var i=Math.max(pageNo-5,1);i<=Math.min(Math.max(pageNo-5,1)+9,pageCount);i++){  %>
