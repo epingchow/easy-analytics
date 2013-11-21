@@ -1,3 +1,9 @@
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .btn-default,
 .btn-primary,
 .btn-success,

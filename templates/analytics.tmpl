@@ -45,6 +45,7 @@
 			form.target = uniqueString;
 			form.action = _url + "/data/" + _key + "/base";
 			form.method = "POST";
+			form.style.display = "none";
 			for (var key in data) {
 				var input = document.createElement("input");
 				input.type = "hidden";
@@ -74,7 +75,9 @@
 			var d = {
 				screenW: window.screen.width,
 				screenH: window.screen.height,
-				path: location.pathname
+				hostname: location.hostname,
+				path: location.pathname,
+				href: location.href
 			};
 			//utils.jsonp(d)
 			//utils.ajax("POST", _url + "/data/" + _key + "/base", d);

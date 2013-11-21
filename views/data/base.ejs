@@ -19,29 +19,32 @@
 				<div class="panel-body" style="padding:0;">
 					<% if(list && list.length>0){ %>
 						
-					<table class="table table-striped table-hover">
+					<table class="table table-striped table-hover" style="table-layout:fixed">
 						<thead>
 							<tr>
-								<th>访客ip</th>
-								<th>主机</th>
+								<th style="width:120px;">访客ip</th>
 								<th>访问url</th>
-								<th>屏幕分辨率</th>
-								<th>浏览器</th>
-								<th>访问时间</th>
+								<th style="width:120px;">屏幕分辨率</th>
+								<th style="width:150px;">浏览器</th>
+								<th style="width:120px;">系统</th>
+								<th style="width:100px;">设备</th>
+								<th style="width:180px;">访问时间</th>
 							</tr>
 						</thead>
 						<% for(var i=0;i<list.length;i++){ %>
 						<tr>
 							<td>
 								<%= list[i].ip %></td>
-							<td>
-								<%= list[i].host %></td>
-							<td>
-								<%= list[i].path %></td>
+							<td class="text-overflow">
+								<%= list[i].href %></td>
 							<td>
 								<%= list[i].screenW %> × <%= list[i].screenH %></td>
 							<td>
-								<%= list[i].userAgent %></td>
+								<%= list[i].browser + " " + list[i].browserVersion %></td>
+							<td>
+								<%= list[i].os %></td>
+							<td>
+								<%= list[i].device %></td>
 							<td>
 								<%= moment(list[i].date.getTime()).format("YYYY-MM-DD HH:mm:ss") %></td>
 
@@ -68,7 +71,7 @@
 			document.form.size.value=parseInt($(this).attr("data-size")) || 1;
 			document.form.submit();
 		});
-		
+
 	});
 </script>
 <%- include ../include/foot %>

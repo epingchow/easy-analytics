@@ -29,9 +29,7 @@ var options = {
   },
   sessionSecret: 'easy-analycity',
   // In production you'd most likely drop the dev. and the port number for both of these
-  url: 'http://127.0.0.1:3000',
-  // Used to check for the same host and redirect (canonicalize) if needed
-  host: '127.0.0.1:3000'
+  url: 'http://127.0.0.1:3000'
 };
 
 var jstmpl = {};
@@ -121,18 +119,25 @@ app.post('/data/:key/base', function(req, res) {
   console.log('Date ',new Date());
   console.log('User-Agent ',req.get("User-Agent"));
   */
+  var r=require("ua-parser").parse(req.get("User-Agent"));
+
   var Base = db.getModel("base", req.params.key);
   new Base({
     screenW: req.body.screenW,
-    host: req.host,
+    host: req.body.hostname,
     screenH: req.body.screenH,
     ip: req.ip,
+    browserVersion:r.ua.toVersionString(),
+    browser:r.ua.family,
+    os:r.os.family,
+    device:r.device.family,
+    href: req.body.href, 
     path: req.body.path,
     date: new Date(),
     userAgent: req.get("User-Agent")
   }).save(function(err) {
     if (!err) {
-      res.set("Content-type", "application/javascript");
+      //res.set("Content-type", "application/javascript");
       res.send(200, "");
       //res.redirect(200,'/data/done');
     } else {

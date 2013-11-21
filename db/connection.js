@@ -22,7 +22,12 @@ var models={
 		host: String,
 		ip: String,
 		path: String,
+		href:String,
 		date: Date,
+		os:String,
+		device:String,
+		browser:String,
+		browserVersion:String,
 		userAgent: String
 	})
 }
