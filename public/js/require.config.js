@@ -10,7 +10,7 @@ requirejs.config({
 		domReady: "libs/domReady",
 		text: "libs/text",
 		d3: "libs/d3/d3.v3.min",
-		highchart: "libs/highchart/js/highcharts-all",
+		highcharts: "libs/highcharts/js/highcharts",
 		bootstrap: "/bootstrap/dist/js/bootstrap.min"
 	},
 	//	map:{  
@@ -28,7 +28,7 @@ requirejs.config({
 		"bootstrap": {
 			deps: ["jquery"]
 		},
-		"highchart": {
+		"highcharts": {
 			deps: ["jquery"],
 			exports: 'jQuery'
 		},
