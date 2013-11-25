@@ -25,15 +25,15 @@
 			</div>
 			<div class="row">
 				<div class="col-md-12">
-					<div id="report-screen" style="height:300px;"></div>
+					<div id="report-screen" style="height:350px;padding:20px;"></div>
 				</div>
 			</div>
 			<div class="row">
 				<div class="col-md-6">
-					<div id="report-browser" style="height:300px;"></div>
+					<div id="report-browser" style="height:350px;padding:20px;"></div>
 				</div>
 				<div class="col-md-6">
-					<div id="report-os" style="height:300px;"></div>
+					<div id="report-os" style="height:350px;padding:20px;"></div>
 				</div>
 			</div>
 			<div class="panel panel-primary">
@@ -88,6 +88,7 @@
 	</div>
 </div>
 <script type="text/javascript">
+	var _KEY="<%= key %>";
 	require(["/data/js/base.js"]);
 	require(["jquery"],function($){
 		$("#pagination").delegate('a[data-no]', 'click', function(event) {

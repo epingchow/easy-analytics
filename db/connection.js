@@ -3,7 +3,6 @@ var mongoose = require("mongoose");
 // content-utils.js
 var db = exports = module.exports = {};
 
-
 mongoose.connect("mongodb://localhost/easy-analytics", function(err) {
 	if (!err) {
 		console.log("connected to mongodb");
@@ -36,3 +35,10 @@ var models={
 db.getModel = function(schema,key){
 	return mongoose.model(schema+"_"+key,models[schema]);
 }
+
+// db.close = function(){
+// 	mongoose.disconnect();
+// }
+
+// db.connect = function(callback){
+// }

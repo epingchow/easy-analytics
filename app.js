@@ -13,7 +13,7 @@ var client = require('./utils/client');
 var fs = require("fs");
 var db = require("./db/connection");
 var app = express();
-
+var async = require("async");
 
 var _ = require('underscore');
 var options = {
@@ -80,32 +80,117 @@ app.get('/data/done', function(req, res) {
 
 
 app.get('/view/:key/base', function(req, res) {
-  var moment = require("moment");
-  var count = db.getModel("base", req.params.key).count({}, function(err, count) {
+  // db.getModel("base",req.params.key).find({},function(err,list){
+  //   res.render("data/base",{
+  //     title:"base",
+  //     key:req.params.key,
+  //     list:list,
+  //     page:page,
+  //     count:count
+  //   });
+  // });
+  //var pagination=require("./utils/ui").pagination;
+  db.getModel("base", req.params.key).count({}, function(err, count) {
+    var moment = require("moment");
     var Page = require("./utils/ui").Page;
-    var page = new Page(req.query.no,req.query.size,count);
-    // db.getModel("base",req.params.key).find({},function(err,list){
-    //   res.render("data/base",{
-    //     title:"base",
-    //     key:req.params.key,
-    //     list:list,
-    //     page:page,
-    //     count:count
-    //   });
-    // });
-    //var pagination=require("./utils/ui").pagination;
+    var page = new Page(req.query.no, req.query.size, count);
     var query = db.getModel("base", req.params.key).find({}).sort("-date").skip(page.skip()).limit(page.pageSize);
     query.exec(function(err, list) {
       res.render("data/base", {
         title: "base",
         key: req.params.key,
         list: list,
-        page:page,
+        page: page,
         count: count
       });
-    })
+    });
   });
 });
+
+app.get('/rest/:key/base', function(req, res) {
+  var o = {};
+  o.map = function() {
+    emit(this.browser, {
+      browser: this.browser,
+      version: this.browserVersion
+    });
+  };
+  o.reduce = function(id, values) {
+    var v = {};
+    var j = 0;
+    values.forEach(function(val) {
+      if (v[val.version] == undefined) {
+        v[val.version] = 0;
+      }
+      v[val.version]++;
+    });
+    return {
+      browser: id,
+      count: values.length,
+      versions: v
+    };
+  };
+
+
+  var data = {};
+  async.series([
+    function(cb) {
+      db.getModel("base", req.params.key).mapReduce(o, function(err, results, stats) {
+        data.browsers=results;
+        cb(err, results);
+      });
+    },
+    function(cb) {
+      db.getModel("base", req.params.key).aggregate({
+        $project: {
+          screenW: 1,
+          screenH: 1
+        }
+      }, {
+        $group: {
+          _id: {
+            w: "$screenW",
+            h: "$screenH"
+          },
+          count: {
+            $sum: 1
+          }
+        }
+      }, function(err, results, stats) {
+        results.forEach(function(val){
+          val.screen=val._id.w+" x "+val._id.h;
+        });
+        data.screens=results;
+        cb(err, results);
+      });
+    },
+    function(cb) {
+      db.getModel("base", req.params.key).aggregate({
+        $project: {
+          os:1
+        }
+      }, {
+        $group: {
+          _id: "$os",
+          count: {
+            $sum: 1
+          }
+        }
+      }, function(err, results, stats) {
+        results.forEach(function(val){
+          val.os=val._id;
+        });
+        data.os=results;
+        cb(err, results);
+      });
+    }
+  ], function(err, values) {
+    res.set("Content-Type", "javascript/json");
+    res.send(200, data);
+  })
+
+});
+
 
 app.post('/data/:key/base', function(req, res) {
   /*
@@ -119,19 +204,18 @@ app.post('/data/:key/base', function(req, res) {
   console.log('Date ',new Date());
   console.log('User-Agent ',req.get("User-Agent"));
   */
-  var r=require("ua-parser").parse(req.get("User-Agent"));
-
+  var r = require("ua-parser").parse(req.get("User-Agent"));
   var Base = db.getModel("base", req.params.key);
   new Base({
     screenW: req.body.screenW,
     host: req.body.hostname,
     screenH: req.body.screenH,
     ip: req.ip,
-    browserVersion:r.ua.toVersionString(),
-    browser:r.ua.family,
-    os:r.os.family,
-    device:r.device.family,
-    href: req.body.href, 
+    browserVersion: r.ua.toVersionString(),
+    browser: r.ua.family,
+    os: r.os.family,
+    device: r.device.family,
+    href: req.body.href,
     path: req.body.path,
     date: new Date(),
     userAgent: req.get("User-Agent")
@@ -143,6 +227,7 @@ app.post('/data/:key/base', function(req, res) {
     } else {
       throw err;
     }
+
   });
 });
 
