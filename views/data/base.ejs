@@ -1,10 +1,5 @@
 <%- include ../include/head %>
 <%- include ../include/nav %>
-<form name="form" action="/view/<%= key %>
-	/base" method="GET">
-	<input type="hidden" name="no" value='<%- page.pageNo %>
-	' />
-	<input type="hidden" name="size" value='<%- page.pageSize %>' /></form>
 <div style="padding:0 15px;">
 	<div class="row">
 		<div class="col-md-12">
@@ -18,8 +13,8 @@
 				</div>
 				<div class="col-md-6">
 					<ul class="nav nav-pills pull-right" style="margin-top:10px;">
-						<li class="active"><a href="#">报表</a></li>
-						<li><a href="#">明细</a></li>
+						<li class="active"><a href="/view/<%= key %>/base">报表</a></li>
+						<li><a a href="/view/<%= key %>/base/detail"><i class="glyphicon glyphicon-list-alt"></i> 明细</a></li>
 					</ul>
 				</div>
 			</div>
@@ -36,70 +31,11 @@
 					<div id="report-os" style="height:350px;padding:20px;"></div>
 				</div>
 			</div>
-			<div class="panel panel-primary">
-				<div class="panel-heading">
-					<div class="panel-title">
-						访问次数
-						<%= count %></div>
-				</div>
-				<div class="panel-body" style="padding:0;">
-					<% if(list && list.length>
-					0){ %>
-					<table class="table table-striped table-hover" style="table-layout:fixed">
-						<thead>
-							<tr>
-								<th style="width:120px;">访客ip</th>
-								<th>访问url</th>
-								<th style="width:120px;">屏幕分辨率</th>
-								<th style="width:150px;">浏览器</th>
-								<th style="width:120px;">系统</th>
-								<th style="width:100px;">设备</th>
-								<th style="width:180px;">访问时间</th>
-							</tr>
-						</thead>
-						<% for(var i=0;i<list.length;i++){ %>
-						<tr>
-							<td>
-								<%= list[i].ip %></td>
-							<td class="text-overflow">
-								<%= list[i].href %></td>
-							<td>
-								<%= list[i].screenW %>
-								×
-								<%= list[i].screenH %></td>
-							<td>
-								<%= list[i].browser + " " + list[i].browserVersion %></td>
-							<td>
-								<%= list[i].os %></td>
-							<td>
-								<%= list[i].device %></td>
-							<td>
-								<%= moment(list[i].date.getTime()).format("YYYY-MM-DD HH:mm:ss") %></td>
-
-						</tr>
-						<% } %></table>
-					<% }else{ %>
-					<%- include ../include/norecord %>
-					<% } %></div>
-			</div>
-			<div class="text-right" id="pagination">
-				<%- page.pagination() %></div>
 		</div>
 	</div>
 </div>
 <script type="text/javascript">
 	var _KEY="<%= key %>";
 	require(["/data/js/base.js"]);
-	require(["jquery"],function($){
-		$("#pagination").delegate('a[data-no]', 'click', function(event) {
-			document.form.no.value=parseInt($(this).attr("data-no")) || 1;
-			document.form.submit();
-		});
-		$("#pagination").delegate('a[data-size]', 'click', function(event) {
-			document.form.size.value=parseInt($(this).attr("data-size")) || 1;
-			document.form.submit();
-		});
-
-	});
 </script>
 <%- include ../include/foot %>

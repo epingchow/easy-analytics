@@ -16,6 +16,8 @@ var app = express();
 var async = require("async");
 
 var _ = require('underscore');
+var services = require("./services");
+
 var options = {
   // Should be unique to your site. Used to hash session identifiers
   // so they can't be easily hijacked
@@ -78,25 +80,23 @@ app.get('/data/done', function(req, res) {
   res.send(200, "");
 });
 
-
+// 查看基本数据页面
 app.get('/view/:key/base', function(req, res) {
-  // db.getModel("base",req.params.key).find({},function(err,list){
-  //   res.render("data/base",{
-  //     title:"base",
-  //     key:req.params.key,
-  //     list:list,
-  //     page:page,
-  //     count:count
-  //   });
-  // });
-  //var pagination=require("./utils/ui").pagination;
-  db.getModel("base", req.params.key).count({}, function(err, count) {
+  res.render("data/base", {
+    title: "base",
+    key: req.params.key
+  });
+});
+
+
+// 查看基本数据明细页面
+app.get('/view/:key/base/detail', function(req, res) {
+  services.getBaseListCount(req.params.key, function(err, count) {
     var moment = require("moment");
     var Page = require("./utils/ui").Page;
     var page = new Page(req.query.no, req.query.size, count);
-    var query = db.getModel("base", req.params.key).find({}).sort("-date").skip(page.skip()).limit(page.pageSize);
-    query.exec(function(err, list) {
-      res.render("data/base", {
+    services.getBaseList(req.params.key, page, function(err, list) {
+      res.render("data/base-detail", {
         title: "base",
         key: req.params.key,
         list: list,
@@ -107,103 +107,38 @@ app.get('/view/:key/base', function(req, res) {
   });
 });
 
+// base 统计数据rest api集合
 app.get('/rest/:key/base', function(req, res) {
-  var o = {};
-  o.map = function() {
-    emit(this.browser, {
-      browser: this.browser,
-      version: this.browserVersion
-    });
-  };
-  o.reduce = function(id, values) {
-    var v = {};
-    var j = 0;
-    values.forEach(function(val) {
-      if (v[val.version] == undefined) {
-        v[val.version] = 0;
-      }
-      v[val.version]++;
-    });
-    return {
-      browser: id,
-      count: values.length,
-      versions: v
-    };
-  };
-
-
   var data = {};
   async.series([
     function(cb) {
-      db.getModel("base", req.params.key).mapReduce(o, function(err, results, stats) {
-        data.browsers=results;
+      services.getBrowserReport(req.params.key, function(err, results) {
+        data.browsers = results;
         cb(err, results);
       });
     },
     function(cb) {
-      db.getModel("base", req.params.key).aggregate({
-        $project: {
-          screenW: 1,
-          screenH: 1
-        }
-      }, {
-        $group: {
-          _id: {
-            w: "$screenW",
-            h: "$screenH"
-          },
-          count: {
-            $sum: 1
-          }
-        }
-      }, function(err, results, stats) {
-        results.forEach(function(val){
-          val.screen=val._id.w+" x "+val._id.h;
-        });
-        data.screens=results;
+      services.getScreenReport(req.params.key, function(err, results) {
+        data.screens = results;
         cb(err, results);
       });
     },
     function(cb) {
-      db.getModel("base", req.params.key).aggregate({
-        $project: {
-          os:1
-        }
-      }, {
-        $group: {
-          _id: "$os",
-          count: {
-            $sum: 1
-          }
-        }
-      }, function(err, results, stats) {
-        results.forEach(function(val){
-          val.os=val._id;
-        });
-        data.os=results;
+      services.getOSReport(req.params.key, function(err, results) {
+        data.os = results;
         cb(err, results);
       });
+
     }
   ], function(err, values) {
     res.set("Content-Type", "javascript/json");
     res.send(200, data);
-  })
-
+  });
 });
 
-
+// base 数据收集 POST
 app.post('/data/:key/base', function(req, res) {
-  /*
-  console.log('screenW ',req.body.screenW);
-  console.log('screenH ',req.body.screenH);
-  console.log('ip ',req.ip);
-  console.log('host ',req.host);
-  console.log('fresh ',req.fresh);
-  console.log('stale ',req.stale);
-  console.log('path ',req.body.path);
-  console.log('Date ',new Date());
-  console.log('User-Agent ',req.get("User-Agent"));
-  */
+
   var r = require("ua-parser").parse(req.get("User-Agent"));
   var Base = db.getModel("base", req.params.key);
   new Base({

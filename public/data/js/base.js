@@ -6,7 +6,6 @@ define(["jquery", "highcharts"], function($) {
 			categories.push(this.screen);
 			values.push(this.count);
 		});
-		console.log(categories,values);
 		$('#report-screen').highcharts({
 			chart: {
 				type: 'column'
@@ -172,7 +171,6 @@ define(["jquery", "highcharts"], function($) {
 	$(function() {
 
 		$.get("/rest/" + window._KEY + "/base", function(data) {
-			console.log(data);
 			reportOS(data.os);
 			reportScreen(data.screens);
 			reportBrowser(data.browsers);
