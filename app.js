@@ -109,6 +109,7 @@ if ('development' == app.get('env')) {
 
 
 app.get('/', routes.index);
+app.get('/signup', sys.signup);
 app.get('/users', user.list);
 
 app.get('/analytics.js', function(req, res) {
