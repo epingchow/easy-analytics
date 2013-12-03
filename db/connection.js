@@ -28,6 +28,12 @@ var models={
 		browser:String,
 		browserVersion:String,
 		userAgent: String
+	}),
+	user: new Schema({
+		id:String,
+		name:String,
+		email:String,
+		password:String
 	})
 }
 
