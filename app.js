@@ -3,20 +3,27 @@
  */
 
 var express = require('express');
-var routes = require('./routes');
-var demo = require('./routes/demo');
-var user = require('./routes/user');
 var http = require('http');
 var path = require('path');
-var client = require('./utils/client');
-
 var fs = require("fs");
+
 var db = require("./db/connection");
 var app = express();
 var async = require("async");
 
 var _ = require('underscore');
 var services = require("./services");
+
+
+var routes = require('./routes');
+var user = require('./routes/user');
+var sys = require('./routes/sys');
+var flash = require('connect-flash');
+
+
+var passport = require('passport'),
+  LocalStrategy = require('passport-local').Strategy;
+
 
 var options = {
   // Should be unique to your site. Used to hash session identifiers
@@ -45,12 +52,49 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(express.favicon());
 app.use(express.logger('dev'));
-app.use(express.bodyParser());
 app.use(express.methodOverride());
-app.use(express.cookieParser('your secret here'));
-app.use(express.session());
-app.use(app.router);
-app.use(express.static(path.join(__dirname, 'public')));
+
+app.configure(function() {
+  app.use(flash());
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.cookieParser('your secret here'));
+  app.use(express.bodyParser());
+  app.use(express.session({
+    secret: 'easy easy',
+    cookie: {
+      maxAge: 60000
+    }
+  }));
+  app.use(passport.initialize());
+  app.use(passport.session());
+  app.use(app.router);
+});
+
+
+configurePassport();
+
+
+var User = {
+  findOne: function(obj, callback) {
+    callback(null, {
+      id: "12345",
+      validPassword: function(ps) {
+        console.log(ps);
+        return true;
+      }
+    })
+  },
+  findById: function(id, callback) {
+    callback(null, {
+      id: "12345",
+      validPassword: function(ps) {
+        console.log(ps);
+        return true;
+      }
+    })
+  }
+}
+
 
 // development only
 if ('development' == app.get('env')) {
@@ -60,8 +104,6 @@ if ('development' == app.get('env')) {
 
 app.get('/', routes.index);
 app.get('/users', user.list);
-app.get('/demo', demo.test);
-
 
 app.get('/analytics.js', function(req, res) {
   var data = {
@@ -169,3 +211,81 @@ app.post('/data/:key/base', function(req, res) {
 http.createServer(app).listen(app.get('port'), function() {
   console.log('Express server listening on port ' + app.get('port'));
 });
+
+
+// 配置 Passport
+function configurePassport() {
+  passport.use(new LocalStrategy({
+      usernameField: 'email',
+      passwordField: 'password'
+    },
+    function(username, password, done) {
+      User.findOne({
+        username: username
+      }, function(err, user) {
+        if (err) {
+          return done(err);
+        }
+        if (!user) {
+          return done(null, false, {
+            message: 'Incorrect username.'
+          });
+        }
+        if (!user.validPassword(password)) {
+          return done(null, false, {
+            message: 'Incorrect password.'
+          });
+        }
+        console.log(user);
+        return done(null, user);
+      });
+    }
+  ));
+
+  // It's up to us to tell Passport how to store the current user in the session, and how to take
+  // session data and get back a user object. We could store just an id in the session and go back
+  // and forth to the complete user object via MySQL or MongoDB lookups, but since the user object
+  // is small and changes rarely, we'll save a round trip to the database by storing the user
+  // information directly in the session in JSON string format.
+
+  passport.serializeUser(function(user, done) {
+    done(null, JSON.stringify(user));
+  });
+
+  passport.deserializeUser(function(json, done) {
+    var user = JSON.parse(json);
+    if (user) {
+      done(null, user);
+    } else {
+      done(new Error("Bad JSON string in session"), null);
+    }
+  });
+
+
+  app.get('/logout', function(req, res) {
+    req.logOut();
+    res.redirect('/');
+  });
+
+  app.get('/login', sys.login);
+  app.post('/login',
+    passport.authenticate('local', {
+      successRedirect: '/view/sproc/base',
+      failureRedirect: '/login',
+      failureFlash: 'invalid'
+    }),
+    function(req, res) {
+      res.redirect('/view/sproc/base');
+    });
+  
+  console.log("Installed passport.initialize");
+
+  app.get('/view/*', function(req, res,next) {
+    if(req.user){
+      next();
+    }else{
+      req.flash('info', 'unsigned');
+      res.redirect('/login');
+    }
+  });
+}
