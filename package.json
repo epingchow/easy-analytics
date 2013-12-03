@@ -24,6 +24,7 @@
     "grunt-recess": "~0.4.0",
     "passport-http": "*",
     "passport-local": "*",
+    "passport-qq": "*",
     "passport": "*",
     "connect-flash":"*"
   }

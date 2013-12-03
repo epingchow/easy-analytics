@@ -13,6 +13,12 @@ module.exports = {
   http: {
     port: 3000
   },
+  oauth: {
+    qq: {
+      clientID:"1101118995",
+      clientSecret:"TZjjJoFu3Gruduct"
+    }
+  },
   sessionSecret: 'easy-analycity',
   // In production you'd most likely drop the dev. and the port number for both of these
   url: 'http://10.10.18.102:3000'

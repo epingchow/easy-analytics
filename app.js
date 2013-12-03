@@ -22,6 +22,7 @@ var flash = require('connect-flash');
 
 
 var passport = require('passport'),
+  QQStrategy = require('passport-qq').Strategy,
   LocalStrategy = require('passport-local').Strategy;
 
 
@@ -36,6 +37,12 @@ var options = {
   http: {
     port: 3000
   },
+  oauth: {
+    qq: {
+      clientID:"",
+      clientSecret:""
+    }
+  },
   sessionSecret: 'easy-analycity',
   // In production you'd most likely drop the dev. and the port number for both of these
   url: 'http://127.0.0.1:3000'
@@ -45,7 +52,6 @@ var jstmpl = {};
 jstmpl.analytics = _.template(fs.readFileSync(__dirname + '/templates/analytics.tmpl', 'utf8'));
 
 _.extend(options, require('./config-local.js'));
-
 // all environments
 app.set('port', options.http.port || 3000);
 app.set('views', __dirname + '/views');
@@ -242,6 +248,32 @@ function configurePassport() {
     }
   ));
 
+  passport.use(new QQStrategy({
+    clientID: options.oauth.qq.clientID,
+    clientSecret: options.oauth.qq.clientSecret,
+    callbackURL: "http://127.0.0.1:3000/auth/qq/callback"
+  },
+  function(accessToken, refreshToken, profile, done) {
+    //User.findOrCreate({ qqId: profile.id }, function (err, user) {
+      console.log(user);
+      return done(err, user);
+   // });
+  }
+));
+
+  app.get('/auth/qq',
+  passport.authenticate('qq'),
+  function(req, res){
+    // The request will be redirected to qq for authentication, so this
+    // function will not be called.
+  });
+
+app.get('/auth/qq/callback', 
+  passport.authenticate('qq', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/');
+  });
   // It's up to us to tell Passport how to store the current user in the session, and how to take
   // session data and get back a user object. We could store just an id in the session and go back
   // and forth to the complete user object via MySQL or MongoDB lookups, but since the user object
