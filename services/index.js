@@ -5,6 +5,7 @@
 
 var _ = require("underscore");
 var db = require("../db/connection");
+var User = require("../models/user");
 // content-utils.js
 var services = exports = module.exports = {};
 
@@ -36,7 +37,7 @@ services.getBrowserReport = function(key, callback) {
 		};
 	};
 
-	db.getModel("base", key).mapReduce(o, function(err, results, stats) {
+	db.getModelWithKey("base", key).mapReduce(o, function(err, results, stats) {
 		callback(err, results);
 	});
 }
@@ -45,7 +46,7 @@ services.getBrowserReport = function(key, callback) {
 // 获取屏幕统计数据
 services.getScreenReport = function(key, callback) {
 
-	db.getModel("base", key).aggregate({
+	db.getModelWithKey("base", key).aggregate({
 		$project: {
 			screenW: 1,
 			screenH: 1
@@ -70,7 +71,7 @@ services.getScreenReport = function(key, callback) {
 
 // 获取操作系统统计数据
 services.getOSReport = function(key, callback) {
-	db.getModel("base", key).aggregate({
+	db.getModelWithKey("base", key).aggregate({
 		$project: {
 			os: 1
 		}
@@ -90,14 +91,48 @@ services.getOSReport = function(key, callback) {
 }
 
 services.getBaseListCount = function(key , callback){
-	db.getModel("base", key).count({}, function(err, count) {
+	db.getModelWithKey("base", key).count({}, function(err, count) {
 		callback(err,count);
   	});
 }
 
 services.getBaseList = function(key,page,callback){
-	var query = db.getModel("base", key).find({}).sort("-date").skip(page.skip()).limit(page.pageSize);
+	var query = db.getModelWithKey("base", key).find({}).sort("-date").skip(page.skip()).limit(page.pageSize);
     query.exec(function(err, list) {
       callback(err,list);
     });
+}
+
+services.getUserListCount = function(key , callback){
+	db.getModel("user").count({}, function(err, count) {
+		callback(err,count);
+  	});
+}
+
+services.getUserList = function(key,page,callback){
+	var query = db.getModel("user").find({}).skip(page.skip()).limit(page.pageSize);
+    query.exec(function(err, list) {
+      callback(err,list);
+    });
+}
+
+
+services.getUserByEmail = function(email,callback){
+	db.getModel("user").findByEmail(email,function(err,result){
+		var user;
+		if(result && result.length>0){
+			user = new User(result[0]);
+		}
+		callback(err,user);
+	});
+}
+
+services.getUserByName = function(name,callback){
+	db.getModel("user").findByName(name,function(err,result){
+		var user;
+		if(result && result.length>0){
+			user = new User(result[0]);
+		}
+		callback(err,user);
+	});
 }

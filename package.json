@@ -27,6 +27,8 @@
     "passport-qq": "*",
     "passport": "*",
     "node-uuid": "1.4.0",
-    "connect-flash":"*"
+    "connect-flash":"*",
+    "express-validator":"*",
+    "validator":"2.0.0"
   }
 }

@@ -30,16 +30,27 @@ var models={
 		userAgent: String
 	}),
 	user: new Schema({
-		id:String,
-		name:String,
-		email:String,
+		name:{ type: [String], index: true },
+		email:{ type: [String], index: true },
 		password:String
 	})
 }
 
+models.user.statics.findByName = function (name, cb) {
+  this.find({ name: name }, cb);
+}
 
-db.getModel = function(schema,key){
+models.user.statics.findByEmail = function (email, cb) {
+  this.find({ email: email }, cb);
+}
+
+
+db.getModelWithKey = function(schema,key){
 	return mongoose.model(schema+"_"+key,models[schema]);
+}
+
+db.getModel = function(schema){
+	return mongoose.model(schema,models[schema]);
 }
 
 // db.close = function(){

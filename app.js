@@ -6,7 +6,6 @@ var express = require('express');
 var http = require('http');
 var path = require('path');
 var fs = require("fs");
-
 var db = require("./db/connection");
 var app = express();
 var async = require("async");
@@ -39,8 +38,8 @@ var options = {
   },
   oauth: {
     qq: {
-      clientID:"",
-      clientSecret:""
+      clientID: "",
+      clientSecret: ""
     }
   },
   sessionSecret: 'easy-analycity',
@@ -60,11 +59,29 @@ app.use(express.favicon());
 app.use(express.logger('dev'));
 app.use(express.methodOverride());
 
+var expressValidator = require('express-validator');
+
 app.configure(function() {
   app.use(flash());
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(express.cookieParser('your secret here'));
   app.use(express.bodyParser());
+  app.use(expressValidator({
+    errorFormatter: function(param, msg, value) {
+      var namespace = param.split('.'),
+        root = namespace.shift(),
+        formParam = root;
+
+      while (namespace.length) {
+        formParam += '[' + namespace.shift() + ']';
+      }
+      return {
+        param: formParam,
+        msg: msg,
+        value: value
+      };
+    }
+  }));
   app.use(express.session({
     secret: 'easy easy',
     cookie: {
@@ -110,6 +127,7 @@ if ('development' == app.get('env')) {
 
 app.get('/', routes.index);
 app.get('/signup', sys.signup);
+app.post('/signup', sys.doSignup);
 app.get('/users', user.list);
 
 app.get('/analytics.js', function(req, res) {
@@ -189,7 +207,7 @@ app.get('/rest/:key/base', function(req, res) {
 app.post('/data/:key/base', function(req, res) {
 
   var r = require("ua-parser").parse(req.get("User-Agent"));
-  var Base = db.getModel("base", req.params.key);
+  var Base = db.getModelWithKey("base", req.params.key);
   new Base({
     screenW: req.body.screenW,
     host: req.body.hostname,
@@ -221,60 +239,61 @@ http.createServer(app).listen(app.get('port'), function() {
 
 
 // 配置 Passport
+
 function configurePassport() {
   passport.use(new LocalStrategy({
       usernameField: 'email',
       passwordField: 'password'
     },
     function(username, password, done) {
-      User.findOne({
-        username: username
-      }, function(err, user) {
+      services.getUserByEmail(username, function(err, user) {
         if (err) {
           return done(err);
         }
         if (!user) {
           return done(null, false, {
-            message: 'Incorrect username.'
+            message: '用户不存在'
           });
         }
         if (!user.validPassword(password)) {
           return done(null, false, {
-            message: 'Incorrect password.'
+            message: '密码不正确'
           });
         }
-        console.log(user);
+        //console.log(user);
         return done(null, user);
       });
     }
   ));
 
+// QQ oauth 暂时没有可用的app key
   passport.use(new QQStrategy({
-    clientID: options.oauth.qq.clientID,
-    clientSecret: options.oauth.qq.clientSecret,
-    callbackURL: "http://127.0.0.1:3000/auth/qq/callback"
-  },
-  function(accessToken, refreshToken, profile, done) {
-    //User.findOrCreate({ qqId: profile.id }, function (err, user) {
-      console.log(user);
+      clientID: options.oauth.qq.clientID,
+      clientSecret: options.oauth.qq.clientSecret,
+      callbackURL: "http://127.0.0.1:3000/auth/qq/callback"
+    },
+    function(accessToken, refreshToken, profile, done) {
+      //User.findOrCreate({ qqId: profile.id }, function (err, user) {
       return done(err, user);
-   // });
-  }
-));
+      // });
+    }
+  ));
 
   app.get('/auth/qq',
-  passport.authenticate('qq'),
-  function(req, res){
-    // The request will be redirected to qq for authentication, so this
-    // function will not be called.
-  });
+    passport.authenticate('qq'),
+    function(req, res) {
+      // The request will be redirected to qq for authentication, so this
+      // function will not be called.
+    });
 
-app.get('/auth/qq/callback', 
-  passport.authenticate('qq', { failureRedirect: '/login' }),
-  function(req, res) {
-    // Successful authentication, redirect home.
-    res.redirect('/');
-  });
+  app.get('/auth/qq/callback',
+    passport.authenticate('qq', {
+      failureRedirect: '/login'
+    }),
+    function(req, res) {
+      // Successful authentication, redirect home.
+      res.redirect('/');
+    });
   // It's up to us to tell Passport how to store the current user in the session, and how to take
   // session data and get back a user object. We could store just an id in the session and go back
   // and forth to the complete user object via MySQL or MongoDB lookups, but since the user object
@@ -305,19 +324,18 @@ app.get('/auth/qq/callback',
     passport.authenticate('local', {
       successRedirect: '/view/sproc/base',
       failureRedirect: '/login',
-      failureFlash: 'invalid'
+      badRequestMessage: "请输入正确的邮箱和密码",
+      failureFlash: true
     }),
     function(req, res) {
       res.redirect('/view/sproc/base');
     });
-  
-  console.log("Installed passport.initialize");
 
-  app.get('/view/*', function(req, res,next) {
-    if(req.user){
+  app.get('/view/*', function(req, res, next) {
+    if (req.user) {
       next();
-    }else{
-      req.flash('info', 'unsigned');
+    } else {
+      req.flash('info', '您必须登陆后才能访问该页面');
       res.redirect('/login');
     }
   });

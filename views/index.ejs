@@ -9,59 +9,74 @@
 				Analytics
 			</h3>
 			<h3 class="text-inverse">用户数据统计分析工具</h3>
+			<h5 class="text-inverse">V0.0.2 内测版</h5>
 		</div>
 	</div>
 	<div class="col-md-7 bs-main" style="height:100%;position:relative;">
 		<div class="row" style="position:absolute;top:40%;margin-top:-160px;width:100%;">
 			<div class="col-md-8 col-md-offset-2">
-				<% if(!locals.type || type == 'login'){ %>
-					<h1 class="text-muted" style="margin-bottom:30px;">登录 Easy Analytics</h1>
-					<% if(locals.info && info == 'unsigned'){ %>
+				<% if(locals.info && info!=""){ %>
 					<div class="alert alert-info alert-dismissable">
 					  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-					  <strong>提示 </strong> 您必须登陆后才能访问本页面
+					  <strong>提示 </strong> <%= info %>
 					</div>
 					<% } %>
-					<% if(locals.error && error=="invalid"){ %>
+
+					<% if(locals.error && error!=""){ %>
 					<div class="alert alert-danger alert-dismissable">
 					  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-					  <strong>出错了 </strong> 用户不存在或者密码错误
+					  <strong>出错了 </strong> <%= error %>
 					</div>
 					<% } %>
+				<% if(!locals.type || type == 'login'){ %>
+					<h1 class="text-muted" style="margin-bottom:30px;">登录 Easy Analytics</h1>
+					
 					<form role="form" method="POST" class="login-form" action="/login">
 						<div class="form-group">
-							<input type="text" name="email" class="form-control" id="email" placeholder="邮箱"></div>
+							<div class="input-group">
+							  <span class="input-group-addon">@</span>
+							  <input type="text" name="email" class="form-control" id="email" placeholder="邮箱"  title="请输入注册时所填写的邮箱"></div>
+							</div>
+							
 						<div class="form-group">
+							<div class="input-group">
+							  <span class="input-group-addon"><i class="glyphicon glyphicon-keys"></i></span>
 							<input type="password" name="password" class="form-control" id="password" placeholder="密码"></div>
+							</div>
 						<div></div>
 						<button type="submit" class="btn btn-primary btn-lg btn-block">登录</button>
 						<a href="/signup" class="btn btn-default btn-lg btn-block">注册新帐号</a>
 						<!-- <a href="/auth/qq" class="btn btn-success btn-block">使用QQ登陆</a> -->
 					</form>
-				<% } else if(locals.type && type == 'signup'){ %>
+				<% } else if(locals.type && type == 'signup'){ var user=locals.user[0];%>
 					<h1 class="text-muted" style="margin-bottom:30px;">加入 Easy Analytics</h1>
-					<% if(global.info && info == 'unsigned'){ %>
-					<div class="alert alert-info alert-dismissable">
-					  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-					  <strong>提示 </strong> 您必须登陆后才能访问本页面
-					</div>
-					<% } %>
-					<% if(global.error && error=="invalid"){ %>
-					<div class="alert alert-danger alert-dismissable">
-					  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-					  <strong>出错了 </strong> 用户不存在或者密码错误
-					</div>
-					<% } %>
 					<form role="form" method="POST" class="login-form" action="/signup">
 						<div class="form-group">
-							<input type="text" name="email" class="form-control" id="email" placeholder="邮箱"></div>
+							<div class="input-group">
+							  <span class="input-group-addon"><i class="glyphicon glyphicon-barcode"></i></span>
+							<input type="text" name="inviteCode" class="form-control" id="inviteCode" placeholder="邀请码"></div>
+							</div>
 						<div class="form-group">
-							<input type="text" name="username" class="form-control" id="username" placeholder="用户名"></div>
+							<div class="input-group">
+							  <span class="input-group-addon">@</span>
+							<input type="text" name="email" class="form-control" id="email" placeholder="邮箱" value="<%= user?user.email:"" %>"></div>
+							</div>
 						<div class="form-group">
+							<div class="input-group">
+							  <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+							<input type="text" name="name" class="form-control" id="name" placeholder="用户名" value="<%= user?user.name:"" %>"></div>
+							</div>
+						<div class="form-group">
+							<div class="input-group">
+							  <span class="input-group-addon"><i class="glyphicon glyphicon-keys"></i></span>
 							<input type="password" name="password" class="form-control" id="password" placeholder="密码"></div>
+							</div>
 						<div class="form-group">
-							<input type="password" name="password" class="form-control" id="password" placeholder="确认密码"></div>
-						<button type="submit" class="btn btn-primary btn-lg btn-block">提交注册</button>
+							<div class="input-group">
+							  <span class="input-group-addon"><i class="glyphicon glyphicon-up-arrow"></i></span>
+							<input type="password" name="passwordComfirm" class="form-control" id="passwordComfirm" placeholder="确认密码"></div>
+							</div>
+						<button type="submit" class="btn btn-success btn-lg btn-block">提交注册</button>
 						<a href="/login" class="btn btn-default btn-lg btn-block">登录已有账号</a>
 						<!-- <a href="/auth/qq" class="btn btn-success btn-block">使用QQ登陆</a> -->
 					</form>
@@ -73,8 +88,17 @@
 <script type="text/javascript">
 	require(["jquery"],function($){
 		$(function(){
-			$("#email").focus();
+			$("form input:first").focus();
 		})
+
+		<% if(locals.validate){ %>
+			<% for(var i=0; i<locals.validate.length;i++){ %>
+				var name="<%= locals.validate[i].param %>";
+				var el=$("input[name="+name+"]");
+				el.parents(".form-group").addClass("has-error");
+				el.parents(".form-group").append('<p class="help-block">'+"<%= locals.validate[i].msg %>"+'</p>')
+			<% } %>
+		<% } %>
 	})
 </script>
 </div>
