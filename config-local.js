@@ -11,7 +11,7 @@ module.exports = {
     name: 'easy-analytics'
   },
   http: {
-    port: 5000
+    port: 3000
   },
   oauth: {
     qq: {

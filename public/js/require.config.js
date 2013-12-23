@@ -10,6 +10,8 @@ requirejs.config({
 		domReady: "libs/domReady",
 		text: "libs/text",
 		d3: "libs/d3/d3.v3.min",
+		angular: "libs/angular.min",
+		heatmap: "libs/heatmap",
 		highcharts: "libs/highcharts/js/highcharts",
 		bootstrap: "/bootstrap/dist/js/bootstrap.min"
 	},
@@ -39,7 +41,13 @@ requirejs.config({
 		"bootstrap": {
 			deps: ["jquery"],
 			exports: 'jQuery'
-		}
+		},
+		'angular': {
+            exports: 'angular'
+        },
+		'heatmap': {
+            exports: 'h337'
+        }
 	}
 });
 

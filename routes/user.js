@@ -3,6 +3,7 @@
  * GET users listing.
  */
 
+var client=require("../utils/client");
 var services = require("../services");
 
 exports.list = function(req, res){
@@ -11,7 +12,7 @@ exports.list = function(req, res){
     var Page = require("../utils/ui").Page;
     var page = new Page(req.query.no, req.query.size, count);
     services.getUserList(req.params.key, page, function(err, list) {
-      res.render("sys/users", {
+      client.sendPage(req,res,"sys/users", {
         title: "users",
         key: req.params.key,
         list: list,

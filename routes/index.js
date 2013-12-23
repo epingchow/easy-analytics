@@ -1,9 +1,7 @@
 /*
  * GET home page.
  */
-
+var client=require("../utils/client");
 exports.index = function(req, res) {
-	res.render('index', {
-		title: 'Easy Analytics'
-	});
+	client.sendPage(req,res,"index",{});
 };

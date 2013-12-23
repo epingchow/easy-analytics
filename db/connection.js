@@ -30,8 +30,8 @@ var models={
 		userAgent: String
 	}),
 	user: new Schema({
-		name:{ type: [String], index: true },
-		email:{ type: [String], index: true },
+		name:{ type: String, index: true },
+		email:{ type: String, index: true },
 		password:String
 	})
 }

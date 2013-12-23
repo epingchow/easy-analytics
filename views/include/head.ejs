@@ -1,8 +1,10 @@
 <!doctype html>
+<% _.defaults(slots, { title: '',user: {}, crumbs: [] }) %>
+<% slots.crumbs.unshift({'title': 'Home', 'href': '/'}) %>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title><%= title %></title>
+	<title><%= slots.title %></title>
 	<link rel="stylesheet" href="/bootstrap/dist/css/bootstrap.min.css">
 	<script type="text/javascript" src="/js/require.js"></script>
 	<script type="text/javascript" src="/js/require.config.js"></script>
@@ -13,7 +15,7 @@
 					placement:"bottom",
 					trigger:"hover focus"
 				});
-			})
+			});
 		});
 	</script>
 </head>

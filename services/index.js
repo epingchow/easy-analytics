@@ -136,3 +136,12 @@ services.getUserByName = function(name,callback){
 		callback(err,user);
 	});
 }
+
+services.saveTo = function(options,callback){
+  _.defaults(options,{});
+  if(!options.model){
+  	return;
+  }
+  var Model = options.key?db.getModelWithKey(options.model, options.key):db.getModel(options.model);
+  new Model(options.data).save(callback);
+}

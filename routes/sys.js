@@ -2,10 +2,14 @@
  * GET home page.
  */
 var check= require('validator').check;
+
+var client=require("../utils/client");
 var db = require("../db/connection");
+
+
 var sys = exports = module.exports = {};
 sys.login = function(req, res) {
-	res.render('index', {
+	client.sendPage(req,res,'index', {
 		type:"login",
 		error:req.flash("error"),
 		info:req.flash("info"),
@@ -13,7 +17,7 @@ sys.login = function(req, res) {
 	});
 };
 sys.signup = function(req, res) {
-	res.render('index', {
+	client.sendPage(req,res,'index', {
 		type:"signup",
 		error:req.flash("error"),
 		info:req.flash("info"),
